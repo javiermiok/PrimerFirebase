@@ -5,4 +5,6 @@
     <string name="btn_update">Modificar</string>
     <string name="btn_remove">Borrar</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="mi_salir">Desconectar</string>
+    <string name="dialog_salir">¿Desea desconectar de la aplicación?</string>
 </resources>
