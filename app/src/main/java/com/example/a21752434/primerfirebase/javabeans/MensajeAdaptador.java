@@ -5,8 +5,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.a21752434.primerfirebase.R;
 
 import java.util.ArrayList;
@@ -42,17 +44,31 @@ public class MensajeAdaptador extends RecyclerView.Adapter<MensajeAdaptador.Mens
 
         private TextView tvTexto;
         private TextView tvRmte;
+        private ImageView ivFoto;
 
         public MensajeViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTexto = itemView.findViewById(R.id.tvTextoMj);
             tvRmte = itemView.findViewById(R.id.tvRemitente);
+            ivFoto = itemView.findViewById(R.id.ivFoto);
         }
 
         public void bindMensaje(Mensaje m) {
-            tvTexto.setText(m.getTextoMsj());
+            if (m.getFotoUrl() != null) {
+                tvTexto.setVisibility(View.GONE);
+                ivFoto.setVisibility(View.VISIBLE);
+                Glide.with(ivFoto.getContext()).load(m.getFotoUrl()).into(ivFoto);
+
+            } else {
+                tvTexto.setVisibility(View.VISIBLE);
+                ivFoto.setVisibility(View.GONE);
+                tvTexto.setText(m.getTextoMsj());
+
+            }
             tvRmte.setText(m.getRemitente());
+
         }
+
     } //fin clase interna
 
     public void clear() {

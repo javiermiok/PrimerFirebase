@@ -32,6 +32,14 @@
             android:layout_weight="1"
             android:onClick="enviar"
             android:text="@string/btn_enviar" />
+
+        <ImageButton
+            android:id="@+id/ibEnviarFoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="enviarFoto"
+            app:srcCompat="@android:drawable/ic_menu_gallery" />
     </LinearLayout>
 
     <android.support.v7.widget.RecyclerView

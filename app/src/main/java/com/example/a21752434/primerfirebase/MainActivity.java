@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,8 @@ import android.widget.Toast;
 import com.example.a21752434.primerfirebase.javabeans.Mensaje;
 import com.example.a21752434.primerfirebase.javabeans.MensajeAdaptador;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -29,6 +32,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +62,13 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
     public static final int RC_SIGN_IN = 1;
+
+    /*STORAGE*/
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mFotoStorageRef;
+
+    public static final int RC_PHOTO_ADJ = 2;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +120,10 @@ public class MainActivity extends AppCompatActivity {
 
         //addChildEventListener();
 
+        /*STORAGE*/
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mFotoStorageRef = mFirebaseStorage.getReference().child("Fotos"); //Nos posicionamos en la carpeta Fotos
+
     }
 
     @Override
@@ -118,6 +135,25 @@ public class MainActivity extends AppCompatActivity {
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(this, "Logeo cancelado", Toast.LENGTH_SHORT).show();
                 finish();
+            }
+        } else if (requestCode == RC_PHOTO_ADJ) {
+            if (resultCode == RESULT_OK) {
+                Uri selectedUri = data.getData();
+                StorageReference fotoRef = mFotoStorageRef.child(selectedUri.getLastPathSegment());
+                UploadTask ut = fotoRef.putFile(selectedUri);
+                ut.addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Task<Uri> task = taskSnapshot.getStorage().getDownloadUrl();
+                        task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                Mensaje fm = new Mensaje(null, remitente, uri.toString());
+                                dbR.push().setValue(fm);
+                            }
+                        });
+                    }
+                });
             }
         }
     }
@@ -171,8 +207,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void enviarFoto(View v) {
+        /*abrirá un selector de archivos para ayudarnos a elegir entre cualquier imagen JPEG almacenada localmente en el dispositivo */
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/jpeg");
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        startActivityForResult(Intent.createChooser(intent, "Complete la acción usando"), RC_PHOTO_ADJ);
+
+    }
+
     public void enviar(View v) {
-        Mensaje msj = new Mensaje(etMensaje.getText().toString(), remitente);
+        Mensaje msj = new Mensaje(etMensaje.getText().toString(), remitente, null);
         String clave = dbR.push().getKey();
         dbR.child(clave).setValue(msj);
         //dbR.push().setValue(msj);
@@ -181,14 +226,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void aniadir(View v) {
-        Mensaje msj = new Mensaje("Bienvenido a Firebase", remitente);
+        Mensaje msj = new Mensaje("Bienvenido a Firebase", remitente, null);
         dbR.child("Bienvenida").setValue(msj);
     }
 
     public void modificar(View v) {
         Map<String, Object> mapa = new HashMap<String, Object>();
-        mapa.put("Bienvenida/remitente", null);                                                     //accede a la propiedad remitente de la clave Bienvenida
-        mapa.put("Despedida", new Mensaje("Hasta pronto!", null));
+        mapa.put("Bienvenida/remitente", null);                 //accede a la propiedad remitente de la clave Bienvenida
+        mapa.put("Despedida", new Mensaje("Hasta pronto!", null, null));
         dbR.updateChildren(mapa);
     }
 

@@ -4,28 +4,28 @@ public class Mensaje {
 
     private String textoMsj;
     private String remitente;
+    private String fotoUrl;
 
     public Mensaje() {
     }
 
-    public Mensaje(String textoMsj, String remitente) {
+    public Mensaje(String textoMsj, String remitente, String fotoUrl) {
         this.textoMsj = textoMsj;
         this.remitente = remitente;
+        this.fotoUrl = fotoUrl;
     }
 
     public String getTextoMsj() {
         return textoMsj;
     }
 
-    public void setTextoMsj(String textoMsj) {
-        this.textoMsj = textoMsj;
-    }
 
     public String getRemitente() {
         return remitente;
     }
 
-    public void setRemitente(String remitente) {
-        this.remitente = remitente;
+
+    public String getFotoUrl() {
+        return fotoUrl;
     }
 }
